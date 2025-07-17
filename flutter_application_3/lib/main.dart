@@ -24,8 +24,20 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
   String _gender = "Laki-laki";
   final TextEditingController weightController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  DateTime? birthDate;
   double? bmi;
   String category = "";
+
+  int getAge(DateTime birthDate) {
+    DateTime today = DateTime.now();
+    int age = today.year - birthDate.year;
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
 
   void calculateBMI() {
     double weight = double.tryParse(weightController.text) ?? 0;
@@ -88,6 +100,15 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: "Nama",
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                  ),
+                  SizedBox(height: 10),
                   Text("Pilih Jenis Kelamin:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   Row(
                     children: [
@@ -113,6 +134,29 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
                       ),
                       Text("Perempuan"),
                     ],
+                  ),
+                  SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () async {
+                      DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime(2000),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) setState(() => birthDate = picked);
+                    },
+                    child: AbsorbPointer(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: birthDate == null
+                              ? "Tanggal Lahir"
+                              : "${birthDate!.day}/${birthDate!.month}/${birthDate!.year}",
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          prefixIcon: Icon(Icons.cake),
+                        ),
+                      ),
+                    ),
                   ),
                   SizedBox(height: 10),
                   TextField(
@@ -154,6 +198,10 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
                     Center(
                       child: Column(
                         children: [
+                          Text("Nama: "+nameController.text, style: TextStyle(fontSize: 16)),
+                          Text("Jenis Kelamin: $_gender", style: TextStyle(fontSize: 16)),
+                          if (birthDate != null)
+                            Text("Umur: "+getAge(birthDate!).toString()+" tahun", style: TextStyle(fontSize: 16)),
                           Text("BMI Anda:", style: TextStyle(fontSize: 18)),
                           Text(
                             "${bmi!.toStringAsFixed(2)}",
